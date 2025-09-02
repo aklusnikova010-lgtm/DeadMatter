@@ -190,12 +190,13 @@ namespace Deadmatter.Decryptor
                                     {
 
                                         //Seaching again while allowing the IV to contain as many null bytes as its entire length
-                                        //This is a slower search as evey byte in the ivSegmentArray will create a new key and a new decryption process
+                                        //This is a slower search as every byte in the ivSegmentArray will create a new key and a new decryption process
                                         if (Globals.debug) { Console.WriteLine("[*] IV was not found during the 1st pass. Attempting a 2nd pass with less strict rules."); }
                                         validIV = BruteforceSearchValidIVwithNulls(ivSegmentArray, msvCredentialsBytes, lsaKeys);
                                         if (!validIV.SequenceEqual(nullBytes16))
                                         {
                                             Console.WriteLine("[*] Found valid IV using brute-force search during 2nd pass");
+                                            if (Globals.debug) { Console.WriteLine("[*] IV Entropy: " + Helpers.CalculateEntropy(validIV)); }
                                             Console.WriteLine("[+] IV: " + Helpers.ByteArrayToString(validIV));
                                             deadmatter.lsakeys.iv = validIV;
                                             iv = validIV;   //Need to set this because in every iteration it gets assigned to deadmatter.lsakeys.iv
@@ -221,6 +222,7 @@ namespace Deadmatter.Decryptor
                                                         if (!validIV.SequenceEqual(nullBytes16))
                                                         {
                                                             Console.WriteLine("[*] Found valid IV using brute-force deep search");
+                                                            if (Globals.debug) { Console.WriteLine("[*] IV Entropy: " + Helpers.CalculateEntropy(validIV)); }
                                                             Console.WriteLine("[+] IV: " + Helpers.ByteArrayToString(validIV));
                                                             deadmatter.lsakeys.iv = validIV;
                                                             iv = validIV;   //Need to set this because in every iteration it gets assigned to deadmatter.lsakeys.iv
@@ -487,7 +489,17 @@ namespace Deadmatter.Decryptor
                         {
                             Console.WriteLine($" ");
                             Console.WriteLine($"=========================================================================");
-                            Console.WriteLine("Decrypted Credentials");
+                            if (IsAllNullBytes(GetBytes(msvDecryptedCredentialsBytes, template.LmOwfPasswordOffset, LM_NTLM_HASH_LENGTH)) &&
+                                !IsAllNullBytes(GetBytes(msvDecryptedCredentialsBytes, template.NtOwfPasswordOffset, LM_NTLM_HASH_LENGTH)) &&
+                                !IsAllNullBytes(GetBytes(msvDecryptedCredentialsBytes, template.ShaOwPasswordOffset, SHA_DIGEST_LENGTH))
+                                )
+                            {
+                                Console.WriteLine("Decrypted Credentials -=[ Mimikatz ]=-");
+                            }
+                            else
+                            {
+                                Console.WriteLine("Decrypted Credentials -=[ Mimikatz ]=-  *** HASHES MISALIGNED ***");
+                            }    
                             Console.WriteLine("\tmsv :");
                             Console.WriteLine("\t [struct. " + msvCount + "] Primary");
                             Console.WriteLine($"\t * Username\t: " + Encoding.Unicode.GetString(GetBytes(msvDecryptedCredentialsBytes, usUserName.Buffer, usUserName.Length)));
@@ -634,22 +646,13 @@ namespace Deadmatter.Decryptor
         {
             //if (Globals.debug) { Console.WriteLine("IV Segment: " + Helpers.ByteArrayToString(ivSegmentArray));}
             byte[] iv = new byte[16];
-            int count;
 
             for (int i = 0; i <= ivSegmentArray.Length - 16; i++)
             {
                 Array.Copy(ivSegmentArray, i, iv, 0, 16);
 
-                count = 0;
-                foreach (byte b in iv)
-                {
-                    if (b == 0x00)
-                    {
-                        count++;
-                    }
-                }
-
-                if (count <= 2)
+                //if (count <= 2)
+                if (Helpers.CalculateEntropy(iv) > 3.6 )
                 {
                     lsaKeys.iv = iv;
                     var msvDecrypted = BCrypt.DecryptCredentials(msvCredentialsBytes, lsaKeys);
@@ -658,6 +661,7 @@ namespace Deadmatter.Decryptor
                     if (isValidIV(msvDecryptedBytes))
                     {
                         Console.WriteLine("[*] Found valid IV using brute-force search");
+                        if (Globals.debug) { Console.WriteLine("[*] IV Entropy: " + Helpers.CalculateEntropy(iv));}
                         //if (Globals.debug) { Console.WriteLine("[+] Valid IV: " + Helpers.ByteArrayToString(iv));}
                         return iv;
                     }

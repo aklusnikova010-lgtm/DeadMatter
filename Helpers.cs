@@ -584,7 +584,7 @@ namespace Deadmatter
         }
 
 
-        public static bool isHexDigit(byte b)
+        public static bool IsHexDigit(byte b)
         {
             // '0 - 9' or 'a - f' or 'A - F' 
             if ((b >= 48 && b <= 57) || (b >= 97 && b <= 102) || (b >= 65 && b <= 70))
@@ -592,6 +592,16 @@ namespace Deadmatter
                 return true;
             }
             return false;
+        }
+
+        public static bool IsAllNullBytes(byte[] arr)
+        {
+            for (int i = 0; i < arr.Length; i++)
+            {
+                if (arr[i] != 0x00)
+                    return false;
+            }
+            return true;
         }
 
         public static byte[] HexStringToByteArray(string hex)
@@ -606,6 +616,27 @@ namespace Deadmatter
             }
             return bytes;
         }
+
+        public static double CalculateEntropy(byte[] data)
+        {
+            if (data == null || data.Length == 0)
+                return 0.0;
+
+            int[] counts = new int[256];
+            foreach (byte b in data)
+                counts[b]++;
+
+            double entropy = 0.0;
+            double len = data.Length;
+            for (int i = 0; i < 256; i++)
+            {
+                if (counts[i] == 0) continue;
+                double p = counts[i] / len;
+                entropy -= p * Math.Log(p,2);  // log base 2
+            }
+            return entropy;
+        }
+
 
         //https://github.com/skelsec/pypykatz/blob/bd1054d1aa948133a697a1dfcb57a5c6463be41a/pypykatz/commons/common.py#L168
         public static ulong GetPtrWithOffset(BinaryReader fileBinaryReader, long pos, string arch)

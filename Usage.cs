@@ -18,7 +18,7 @@ namespace Deadmatter
             Console.WriteLine("-f                   True        Memory dump file name and path. e.g. C:\\path\\memdump.raw");
             Console.WriteLine("-m                   False       Set mode of MSV logon credentials extraction. Default value \'both\'");
             Console.WriteLine("                                   Accepted values:");
-            Console.WriteLine("                                     mimikatz    -   use mimikatz MSV credential structures");
+            Console.WriteLine("                                     mimikatz    -   use mimikatz MSV credential structures based on OS profile");
             Console.WriteLine("                                     carve       -   carve credentials out of the decrypted MSV blob. LM must be nulls.");
             Console.WriteLine("                                     both        -   use both carve and mimikatz modes. (Default)");
             Console.WriteLine("                                     none        -   do not display extracted MSV credentials");
