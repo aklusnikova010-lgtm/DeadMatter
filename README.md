@@ -18,22 +18,22 @@ The tool has been presented at Black Hat USA 2025 Arsenal.
 ```
 Extract credentials from a full memory dump file in raw format using both Mimikatz structure and carving techniques
 --------------------------------------------------------------------------------------------------------------
-C:\> Deadmatter.exe -f=memory_dump.raw
+C:\> Deadmatter.exe -f memory_dump.raw
 
 
 Extract credentials from a full memory dump file in raw format using carving techniques only
 ---------------------------------------------------------------------------------------
-C:\> Deadmatter.exe -f=memory_dump.raw -m carve
+C:\> Deadmatter.exe -f memory_dump.raw -m carve
 
 
 Identify the OS version based on the MSV structure details
 ----------------------------------------------------------
-C:\> Deadmatter.exe -f=memory_dump.raw -m none -i
+C:\> Deadmatter.exe -f memory_dump.raw -m none -i
 
 
 Extract credentials from a minidump file using Windows 10 version 1507 Mimikatz structure technique with verbose output
 ----------------------------------------------------------------------------------------------------------------------
-C:\> Deadmatter.exe -f=lsass.dmp -m mimikatz -w WIN_10_1507 -v
+C:\> Deadmatter.exe -f lsass.dmp -m mimikatz -w WIN_10_1507 -v
 
 
 Extract credentials and DPAPI keys from a full memory dump file in raw format and brute-force search for the IV
